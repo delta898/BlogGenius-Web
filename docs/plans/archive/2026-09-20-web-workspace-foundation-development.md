@@ -5,7 +5,8 @@
 - Branch: `feature/web-workspace-foundation`
 - Base/parent branch: `dev`
 - Started: `2026-09-20`
-- Status: in progress
+- Completed: `2026-09-20`
+- Status: complete
 
 ## User Need
 
@@ -93,10 +94,20 @@ Local ports are intentionally explicit:
   `de08c6b` (`docs: establish BlogGenius Web foundation`)로 기록했다.
 - `main`에서 `dev`, `dev`에서 `feature/web-workspace-foundation`을 생성했다.
 - Oracle 서버가 `linux/amd64`임을 사용자에게 확인했다.
+- Local lint, typecheck, seven unit cases and both application builds passed.
+- Apple Silicon에서 builder까지 `linux/amd64`로 QEMU 실행한 Docker build는 Alpine과
+  Debian 모두 Next compiler 단계에서 SIGSEGV가 발생했다. Base image가 아니라 emulated
+  build boundary 문제로 확인해 builder는 `BUILDPLATFORM`, final runtime은
+  target platform을 사용하도록 수정했다. 최종 AMD64 container의 health/page 실행으로
+  runtime 호환성을 별도로 검증했다.
+- `./ops build`로 site/admin `linux/amd64` image를 생성했다.
+- `./ops up`과 Compose health check로 두 container가 모두 healthy임을 확인했다.
+- Public site HTML, Backoffice page, live/readiness endpoint를 HTTP로 확인했다.
+- 검증 뒤 `./ops down`으로 project container와 network만 정리했다.
 
 ## Verification
 
-Planned commands:
+Executed commands:
 
 ```bash
 ./ops doctor
@@ -115,6 +126,16 @@ GET http://127.0.0.1:3000/health/live
 GET http://127.0.0.1:3000/health/ready
 ```
 
+Results:
+
+- lint, strict typecheck, 7 unit tests: pass
+- site static export and admin standalone build: pass
+- site/admin Docker image architecture: `linux/amd64`
+- Compose service health: both healthy
+- site response: `200` with the BlogGenius placeholder page
+- admin live response: `{"status":"live"}`
+- admin ready response: `{"status":"ready","environment":"local"}`
+
 ## Remaining Risks and Follow-up
 
 - Oracle 서버의 실제 container resource 사용량은 Development 배포 단계에서 측정한다.
@@ -125,4 +146,6 @@ GET http://127.0.0.1:3000/health/ready
 
 ## Result
 
-진행 중이다.
+공개 사이트와 Backoffice의 재현 가능한 workspace, 분리된 runtime image, local Compose와
+단일 `./ops` 운영 인터페이스를 구축하고 검증했다. 실제 Development/Production 배포,
+Supabase 연결과 인증·권한은 의도적으로 다음 feature로 남겼다.

@@ -62,6 +62,15 @@ digest라는 두 운영 모델을 모두 기억해야 했다. 작은 static cont
 `promote`, `status`, `rollback`이 실행 전 target, commit SHA, image digest와 영향 범위를
 설명하고 위험한 Production 작업은 명시적인 확인을 요구하게 만드는 과정을 다룬다.
 
+### 웹 코드는 플랫폼 중립적인데 Docker build는 왜 실패했을까
+
+Apple Silicon에서 Oracle의 `linux/amd64` 이미지를 만들며 Next.js 자체 코드가 아니라
+SWC/Turbopack과 Sharp의 native binary가 QEMU 경계에서 충돌한 경험을 다룬다. Alpine을
+Debian으로 바꾸는 것만으로 해결되지 않았고, build stage는 host native platform에서 실행하고
+final runtime만 target platform으로 만드는 경계를 통해 해결했다. “웹 앱은 플랫폼 중립적”이라는
+설명과 build toolchain 및 배포 artifact의 architecture 계약은 별개라는 교훈, 그리고 최종
+container를 실제 기동해 health와 HTTP 응답으로 증명해야 한다는 과정을 기록한다.
+
 ### 아직 한 줄의 제품 코드도 쓰지 않았지만 이미 개발은 시작됐다
 
 Repository, AI workspace, 작업 규칙과 문서 lifecycle을 준비한 과정을 통해 설계와 협업 기반을 만드는

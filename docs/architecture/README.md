@@ -11,3 +11,7 @@
 - Desktop App과 공유하거나 연동하는 계약
 
 아직 확정되지 않았거나 구현 중인 설계는 먼저 `docs/plans/active/`에 기록한다.
+
+## Current Documents
+
+- [Workspace and runtime layout](workspace-and-runtime-layout.md)
