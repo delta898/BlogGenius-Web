@@ -17,6 +17,7 @@
 
 ## Current Documents
 
+- [2026-09-20 Development deployment foundation](plans/active/2026-09-20-development-deployment-foundation-development.md)
 - [2026-09-19 Web platform foundation](plans/active/2026-09-19-web-platform-foundation-development.md)
 - [2026-09-19 Architecture and stack evaluation](plans/active/2026-09-19-architecture-stack-evaluation.md)
 - [2026-09-19 Domain and host topology](plans/active/2026-09-19-domain-and-host-topology-development.md)
