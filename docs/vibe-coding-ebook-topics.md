@@ -47,6 +47,21 @@ BlogGenius의 정적 사이트와 Backoffice는 하나의 Web 저장소로 묶�
 라우팅하는 Caddy와 Docker Compose는 별도 Oracle Web Infrastructure 프로젝트로 분리했다.
 하나의 제품을 쉽게 배포하려는 목표와 공용 gateway의 장애 범위를 분리하는 판단 과정을 다룬다.
 
+### 구조적 분리는 유지하고 운영 방식은 하나로 합치기
+
+공개 사이트는 정적 파일이고 Backoffice는 server runtime이라는 차이 때문에 처음에는 webroot와
+Docker를 혼합하는 배포안을 검토했다. 구조적으로는 효율적이지만 사용자가 upload/symlink와 image
+digest라는 두 운영 모델을 모두 기억해야 했다. 작은 static container의 비용을 받아들이고 두
+산출물을 모두 OCI image로 통일해 build, promotion과 rollback을 하나의 release manifest로 다루기로
+한 과정을 기록한다. 좋은 단순화는 component 경계를 지우는 것이 아니라 운영자의 기억 부담을
+줄이는 방향이어야 한다는 사례다.
+
+### 사용자가 외울 명령을 하나로 줄이는 운영 인터페이스
+
+내부 script가 여러 개여도 root의 `./ops`만 기억하도록 설계한다. `doctor`, `validate`, `deploy`,
+`promote`, `status`, `rollback`이 실행 전 target, commit SHA, image digest와 영향 범위를
+설명하고 위험한 Production 작업은 명시적인 확인을 요구하게 만드는 과정을 다룬다.
+
 ### 아직 한 줄의 제품 코드도 쓰지 않았지만 이미 개발은 시작됐다
 
 Repository, AI workspace, 작업 규칙과 문서 lifecycle을 준비한 과정을 통해 설계와 협업 기반을 만드는
