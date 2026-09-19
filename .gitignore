@@ -1,0 +1,19 @@
+# Dependencies and build output
+node_modules/
+.next/
+out/
+coverage/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Tooling
+*.tsbuildinfo
+.pnpm-store/
+
+# OS and editors
+.DS_Store
+.idea/
+.vscode/

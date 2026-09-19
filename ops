@@ -1,0 +1,145 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+compose_file="$project_root/deployment/compose.local.yml"
+target_platform="linux/amd64"
+
+usage() {
+  cat <<'EOF'
+Usage: ./ops <command>
+
+Local foundation commands:
+  help       Show this help.
+  doctor     Check required local tools and target architecture.
+  validate   Run lint, type checks, unit tests and application builds.
+  build      Build the local linux/amd64 site and admin images.
+  up         Build and start the local Compose project, then wait for health.
+  down       Stop the local Compose project without deleting volumes.
+  status     Show Git identity and local container status.
+
+Development and Production deployment commands are intentionally unavailable
+until immutable image publication, release manifests and rollback are built.
+EOF
+}
+
+require_command() {
+  local command_name="$1"
+  if ! command -v "$command_name" >/dev/null 2>&1; then
+    echo "Required command not found: $command_name" >&2
+    exit 1
+  fi
+}
+
+run_doctor() {
+  local node_version node_major
+
+  for command_name in git node pnpm docker; do
+    require_command "$command_name"
+  done
+
+  node_version="$(node --version)"
+  node_major="${node_version#v}"
+  node_major="${node_major%%.*}"
+  if [[ "$node_major" != "24" ]]; then
+    echo "Node.js 24 is required; found $node_version." >&2
+    exit 1
+  fi
+
+  docker compose version >/dev/null
+
+  echo "Repository: $project_root"
+  echo "Node:       $node_version"
+  echo "pnpm:       $(pnpm --version)"
+  echo "Docker:     $(docker --version)"
+  if docker info >/dev/null 2>&1; then
+    echo "Daemon:     running"
+  else
+    echo "Daemon:     not running (required only for build/up/status)"
+  fi
+  echo "Host arch:  $(uname -m)"
+  echo "Target:     $target_platform"
+}
+
+require_docker_daemon() {
+  if ! docker info >/dev/null 2>&1; then
+    echo "Docker daemon is not running. Start Docker before this command." >&2
+    exit 1
+  fi
+}
+
+run_validate() {
+  run_doctor
+  cd "$project_root"
+  pnpm lint
+  pnpm typecheck
+  pnpm test
+  pnpm build
+}
+
+run_build() {
+  run_doctor
+  require_docker_daemon
+  docker compose --file "$compose_file" build
+}
+
+run_up() {
+  run_doctor
+  require_docker_daemon
+  docker compose --file "$compose_file" up --detach --build --wait
+}
+
+run_down() {
+  require_command docker
+  require_docker_daemon
+  docker compose --file "$compose_file" down
+}
+
+run_status() {
+  local branch sha dirty
+
+  branch="$(git -C "$project_root" branch --show-current)"
+  sha="$(git -C "$project_root" rev-parse --short=12 HEAD)"
+  if [[ -n "$(git -C "$project_root" status --short)" ]]; then
+    dirty="yes"
+  else
+    dirty="no"
+  fi
+
+  echo "Branch:     $branch"
+  echo "Commit:     $sha"
+  echo "Dirty:      $dirty"
+  echo "Target:     $target_platform"
+  require_docker_daemon
+  docker compose --file "$compose_file" ps
+}
+
+command_name="${1:-help}"
+case "$command_name" in
+  help|-h|--help)
+    usage
+    ;;
+  doctor)
+    run_doctor
+    ;;
+  validate)
+    run_validate
+    ;;
+  build)
+    run_build
+    ;;
+  up)
+    run_up
+    ;;
+  down)
+    run_down
+    ;;
+  status)
+    run_status
+    ;;
+  *)
+    echo "Unknown command: $command_name" >&2
+    usage >&2
+    exit 2
+    ;;
+esac
