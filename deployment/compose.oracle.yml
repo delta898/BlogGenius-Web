@@ -1,0 +1,51 @@
+name: bloggenius-${DEPLOY_ENVIRONMENT:?DEPLOY_ENVIRONMENT is required}
+
+services:
+  site:
+    image: ${SITE_IMAGE:?SITE_IMAGE is required}
+    platform: linux/amd64
+    restart: unless-stopped
+    labels:
+      bloggenius.environment: ${DEPLOY_ENVIRONMENT}
+      bloggenius.release-sha: ${RELEASE_SHA:?RELEASE_SHA is required}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      edge:
+        aliases:
+          - bloggenius-site-${DEPLOY_ENVIRONMENT}
+
+  admin:
+    image: ${ADMIN_IMAGE:?ADMIN_IMAGE is required}
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      APP_ENVIRONMENT: ${DEPLOY_ENVIRONMENT}
+    labels:
+      bloggenius.environment: ${DEPLOY_ENVIRONMENT}
+      bloggenius.release-sha: ${RELEASE_SHA:?RELEASE_SHA is required}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    networks:
+      edge:
+        aliases:
+          - bloggenius-admin-${DEPLOY_ENVIRONMENT}
+
+networks:
+  edge:
+    external: true
+    name: ${EDGE_NETWORK:-oracle-web-edge}

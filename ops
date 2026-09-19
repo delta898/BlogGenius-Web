@@ -3,6 +3,8 @@ set -euo pipefail
 
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 compose_file="$project_root/deployment/compose.local.yml"
+oracle_compose_file="$project_root/deployment/compose.oracle.yml"
+manifest_tool="$project_root/scripts/release-manifest.mjs"
 target_platform="linux/amd64"
 
 usage() {
@@ -18,8 +20,14 @@ Local foundation commands:
   down       Stop the local Compose project without deleting volumes.
   status     Show Git identity and local container status.
 
-Development and Production deployment commands are intentionally unavailable
-until immutable image publication, release manifests and rollback are built.
+Deployment foundation commands:
+  manifest verify <file> <environment>
+             Verify the immutable release manifest contract.
+  preflight development <file> [--check-only]
+             Verify a Development manifest and render Oracle Compose safely.
+
+Actual Development and Production deployment commands remain unavailable until
+the Oracle edge contract and rollback workflow are activated.
 EOF
 }
 
@@ -114,6 +122,60 @@ run_status() {
   docker compose --file "$compose_file" ps
 }
 
+run_manifest() {
+  local action="${1:-}" manifest_file="${2:-}" environment="${3:-}"
+
+  require_command node
+  if [[ "$action" != "verify" || -z "$manifest_file" || -z "$environment" ]]; then
+    echo "Usage: ./ops manifest verify <file> <environment>" >&2
+    exit 2
+  fi
+  node "$manifest_tool" verify "$manifest_file" "$environment"
+}
+
+run_preflight() {
+  local environment="${1:-}" manifest_file="${2:-}" mode="${3:-}"
+  local branch head manifest_sha
+
+  if [[ "$environment" != "development" || -z "$manifest_file" ]]; then
+    echo "Usage: ./ops preflight development <file> [--check-only]" >&2
+    exit 2
+  fi
+  if [[ -n "$mode" && "$mode" != "--check-only" ]]; then
+    echo "Unknown preflight option: $mode" >&2
+    exit 2
+  fi
+
+  require_command git
+  require_command node
+  require_command docker
+  node "$manifest_tool" verify "$manifest_file" "$environment"
+  docker compose --env-file "$manifest_file" --file "$oracle_compose_file" config --quiet
+
+  branch="$(git -C "$project_root" branch --show-current)"
+  head="$(git -C "$project_root" rev-parse HEAD)"
+  manifest_sha="$(sed -n 's/^RELEASE_SHA=//p' "$manifest_file")"
+
+  if [[ "$mode" == "--check-only" ]]; then
+    echo "Compose contract is valid (check-only; branch/SHA eligibility skipped)."
+    return
+  fi
+  if [[ "$branch" != "dev" ]]; then
+    echo "Development deployment eligibility requires branch dev; found $branch." >&2
+    exit 1
+  fi
+  if [[ -n "$(git -C "$project_root" status --short)" ]]; then
+    echo "Development deployment eligibility requires a clean working tree." >&2
+    exit 1
+  fi
+  if [[ "$manifest_sha" != "$head" ]]; then
+    echo "Manifest RELEASE_SHA does not match the current commit." >&2
+    exit 1
+  fi
+
+  echo "Development release is eligible for the future deploy command."
+}
+
 command_name="${1:-help}"
 case "$command_name" in
   help|-h|--help)
@@ -136,6 +198,14 @@ case "$command_name" in
     ;;
   status)
     run_status
+    ;;
+  manifest)
+    shift
+    run_manifest "$@"
+    ;;
+  preflight)
+    shift
+    run_preflight "$@"
     ;;
   *)
     echo "Unknown command: $command_name" >&2

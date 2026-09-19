@@ -1,0 +1,90 @@
+name: Publish Development Images
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+concurrency:
+  group: publish-development-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate applications and deployment contract
+        run: |
+          ./ops validate
+          ./ops preflight development deployment/examples/development.release.env --check-only
+
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Build and publish site
+        id: site
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: apps/site/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/delta898/bloggenius-web-site:dev-${{ github.sha }}
+          provenance: true
+          sbom: true
+
+      - name: Build and publish admin
+        id: admin
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: apps/admin/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/delta898/bloggenius-web-admin:dev-${{ github.sha }}
+          provenance: true
+          sbom: true
+
+      - name: Create immutable Development manifest
+        run: |
+          node scripts/release-manifest.mjs create \
+            development \
+            "${{ github.sha }}" \
+            "ghcr.io/delta898/bloggenius-web-site@${{ steps.site.outputs.digest }}" \
+            "ghcr.io/delta898/bloggenius-web-admin@${{ steps.admin.outputs.digest }}" \
+            > development.release.env
+          node scripts/release-manifest.mjs verify development.release.env development
+
+      - name: Upload release manifest
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: development-release-${{ github.sha }}
+          path: development.release.env
+          if-no-files-found: error
+          retention-days: 30

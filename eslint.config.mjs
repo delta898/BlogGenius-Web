@@ -12,7 +12,7 @@ export default defineConfig([
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ["apps/**/*.mjs"],
+    files: ["apps/**/*.mjs", "scripts/**/*.mjs"],
     languageOptions: {
       globals: {
         process: "readonly",
