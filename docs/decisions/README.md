@@ -12,3 +12,7 @@
 - 후속 작업 또는 재검토 조건
 
 파일명은 `YYYY-MM-DD-normalized-decision.md` 형식을 기본으로 한다.
+
+## Current Decisions
+
+- [Immutable release manifest](2026-09-20-immutable-release-manifest.md)

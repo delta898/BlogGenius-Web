@@ -5,7 +5,8 @@
 - Branch: `feature/development-deployment-foundation`
 - Base/parent branch: `dev`
 - Started: `2026-09-20`
-- Status: in progress
+- Completed: `2026-09-20`
+- Status: complete
 
 ## User Need
 
@@ -106,21 +107,38 @@ The application Compose file is environment-neutral. A validated manifest suppli
 - OracleWebInfra inspection confirmed that BlogGenius routing still uses static
   bind-mounted webroots. The accepted OCI route is therefore a coordinated future
   infrastructure change, not part of this application feature.
+- 첫 large patch는 shell variable과 JavaScript template expression escaping이
+  충돌해 parser 단계에서 중단됐다. 변경이 없음을 확인하고 patch를 책임 단위로 나눠
+  적용했다.
+- 첫 lint는 manifest CLI의 ESM entry check가 implicit `URL` global을 사용해
+  실패했다. `node:url`의 `pathToFileURL`을 명시적으로 import해 수정했다.
+- GitHub 공식 action release refs를 확인하고 workflow의 모든 action을 full commit
+  SHA로 고정했다.
 
 ## Verification
 
-Planned checks:
+Executed checks:
 
 ```bash
 ./ops validate
 ./ops manifest verify deployment/examples/development.release.env
-./ops preflight development deployment/examples/development.release.env
+./ops preflight development deployment/examples/development.release.env --check-only
 docker compose --env-file deployment/examples/development.release.env \
   -f deployment/compose.oracle.yml config -q
 ```
 
 Negative tests must reject mutable tags, wrong environments, malformed commit SHA,
 missing values and attempts to use a Development command with Production input.
+
+Results:
+
+- lint, strict typecheck and both application production builds: pass
+- unit tests: 14 pass across 2 files
+- manifest fixture verification: pass
+- Oracle Compose render in check-only preflight: pass
+- workflow YAML parse and `bash -n ops`: pass
+- feature branch without `--check-only`: correctly rejected as not Development
+  deployment eligible
 
 ## Remaining Risks and Follow-up
 
@@ -133,4 +151,6 @@ missing values and attempts to use a Development command with Production input.
 
 ## Result
 
-진행 중이다.
+GHCR Development image publication workflow, immutable release manifest validator,
+environment-neutral Oracle application Compose와 fail-closed preflight를 구현하고
+로컬 검증했다. 외부 package 발행, Oracle 배포와 Caddy 전환은 수행하지 않았다.

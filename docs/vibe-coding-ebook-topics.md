@@ -344,6 +344,25 @@ Cloudflare zone을 먼저 만들고 배정된 nameserver와 필요한 DNS record
 교체해야 한다. Nameserver를 추측하거나 DNSSEC 순서를 잘못 처리하면 새 도메인이 처음부터
 접속 불가 상태가 될 수 있다는 운영 교훈을 향후 실제 연결 과정과 함께 기록한다.
 
+### Tag는 이름이고 digest는 증거다
+
+Development image를 `latest`나 `dev` tag로 배포하면 같은 배포 기록이 시간이 지나
+다른 artifact를 가리킬 수 있다. Site와 admin image의 registry digest, source commit과
+environment를 작은 manifest로 묶고, Production에서는 다시 build하지 않고 같은 digest를
+승격하기로 한 과정을 다룬다.
+
+### 자동화 코드를 추가하는 것과 실제 배포 권한은 다르다
+
+GHCR publish workflow와 Oracle Compose 계약을 저장소에 추가했지만, feature branch에서
+workflow를 실행하거나 Oracle에 접속하지 않았다. 코드로 capability를 준비하는 승인과
+외부 package 발행·서버 변경·public traffic 전환 승인을 분리한 사례다.
+
+### CI의 편리한 action tag도 공급망에서는 mutable하다
+
+`actions/checkout@v7`처럼 읽기 좋은 major tag 대신 공식 release의 full commit SHA를
+확인해 고정했다. 버전 주석으로 유지보수성을 남기면서 실행 identity는 바뀌지 않게 만드는
+절충, 그리고 action update를 의도적인 review 대상으로 다룬다.
+
 ## AGENTS.md로 AI 개발팀 운영하기
 
 ### 매번 프롬프트를 반복하지 않는 프로젝트 헌법

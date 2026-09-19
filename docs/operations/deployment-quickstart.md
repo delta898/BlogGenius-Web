@@ -46,15 +46,28 @@ final runtime image targets AMD64. Stop the local stack without deleting volumes
 ./ops down
 ```
 
+## Development Publication and Preflight
+
+`dev`에 원격 push하면 GitHub Actions가 검증 후 GHCR image와 immutable release
+manifest를 발행하도록 workflow가 준비되어 있다. 로컬에서는 실제 외부 변경 없이
+계약을 검증할 수 있다.
+
+```bash
+./ops manifest verify deployment/examples/development.release.env development
+./ops preflight development deployment/examples/development.release.env --check-only
+```
+
+자세한 계약과 현재 제한은
+[Development release preflight](development-release-preflight.md)를 따른다.
+
 ## Planned Development Deployment
 
 ```bash
 ./ops deploy development
 ```
 
-This command is not available until the Development deployment feature
-implements immutable image publication, release manifests, server preflight,
-health checks and rollback state.
+This command is not available until OracleWebInfra provides the external edge
+network, reverse proxy contract, server release state and rollback procedure.
 
 ## Planned Production Promotion
 

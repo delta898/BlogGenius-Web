@@ -17,7 +17,7 @@
 
 ## Current Documents
 
-- [2026-09-20 Development deployment foundation](plans/active/2026-09-20-development-deployment-foundation-development.md)
+- [2026-09-20 Development deployment foundation](plans/archive/2026-09-20-development-deployment-foundation-development.md)
 - [2026-09-19 Web platform foundation](plans/active/2026-09-19-web-platform-foundation-development.md)
 - [2026-09-19 Architecture and stack evaluation](plans/active/2026-09-19-architecture-stack-evaluation.md)
 - [2026-09-19 Domain and host topology](plans/active/2026-09-19-domain-and-host-topology-development.md)
@@ -26,7 +26,9 @@
 - [2026-09-19 Git branch and promotion strategy](decisions/2026-09-19-git-branch-and-promotion-strategy.md)
 - [2026-09-19 Canonical domain and primary hosts](decisions/2026-09-19-canonical-domain-and-primary-hosts.md)
 - [2026-09-20 Containerized Web deployment](decisions/2026-09-20-containerized-web-deployment.md)
+- [2026-09-20 Immutable release manifest](decisions/2026-09-20-immutable-release-manifest.md)
 - [Deployment quick start](operations/deployment-quickstart.md)
+- [Development release preflight](operations/development-release-preflight.md)
 - [바이브 코딩 전자책 주제 노트](vibe-coding-ebook-topics.md)
 
 ## Working Rule
