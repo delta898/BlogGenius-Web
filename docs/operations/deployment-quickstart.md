@@ -63,12 +63,14 @@ manifest를 발행하도록 workflow가 준비되어 있다. 로컬에서는 실
 ## Development Deployment
 
 ```bash
-./ops deploy development <manifest>
+./ops deploy development [<manifest>]
 ./ops rollback development
 ```
 
-`deploy`는 manifest 적격성(`dev` 브랜치, clean tree, SHA 일치, digest, Compose render)을
-먼저 강제하고, 서버 `releases/<sha>/`에 Compose와 manifest를 전송한 뒤 `pull`과
+`deploy`는 manifest 경로를 생략하면 현재 커밋에 대한 성공 publish run의
+manifest를 자동으로 받아 사용하고, 경로를 주면 그 파일을 그대로 사용한다.
+어느 경우든 manifest 적격성(`dev` 브랜치, clean tree, SHA 일치, digest,
+Compose render)을 먼저 강제하고, 서버 `releases/<sha>/`에 Compose와 manifest를 전송한 뒤 `pull`과
 `up --wait`로 healthy 도달을 확인한다. 성공한 릴리스만 `current`로 승격하고 이전
 릴리스를 `previous`에 남긴다. `rollback`은 `previous`가 있을 때만 직전 릴리스로
 복귀한다. 두 명령 모두 Caddy, OracleWebInfra, Production에触하지 않는다.

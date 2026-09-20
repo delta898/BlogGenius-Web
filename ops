@@ -25,8 +25,10 @@ Deployment foundation commands:
              Verify the immutable release manifest contract.
   preflight development <file> [--check-only]
              Verify a Development manifest and render Oracle Compose safely.
-  deploy development <file>
+  deploy development [<file>]
              Deploy a verified Development manifest to the Oracle server.
+             Without <file>, use the manifest from the successful publish
+             run for the current commit.
   rollback development
              Roll back to the previous Development release on the Oracle server.
 
@@ -180,14 +182,31 @@ run_preflight() {
   echo "Development release is eligible for ./ops deploy development."
 }
 
+resolve_manifest() {
+  local head_sha="$1" run_id tmp_dir
+
+  require_command gh
+  run_id="$(gh run list --branch dev --workflow "Publish Development Images" \
+    --limit 10 --json databaseId,headSha,conclusion \
+    -q "[.[] | select(.headSha==\"$head_sha\" and .conclusion==\"success\")][0].databaseId")"
+  if [[ -z "$run_id" || "$run_id" == "null" ]]; then
+    echo "No successful publish run found for commit $head_sha." >&2
+    echo "Wait for CI on dev, or pass a manifest file explicitly." >&2
+    exit 1
+  fi
+  tmp_dir="$(mktemp -d)"
+  gh run download "$run_id" -n "development-release-$head_sha" --dir "$tmp_dir"
+  echo "$tmp_dir/development.release.env"
+}
+
 run_deploy() {
   local environment="${1:-}" manifest_file="${2:-}"
   local manifest_sha remote_dir
   local deploy_host="${DEPLOY_HOST:-oracle1}"
   local deploy_root="${DEPLOY_ROOT:-/home/ubuntu/Project/BlogGenius-Web}"
 
-  if [[ "$environment" != "development" || -z "$manifest_file" ]]; then
-    echo "Usage: ./ops deploy development <file>" >&2
+  if [[ "$environment" != "development" ]]; then
+    echo "Usage: ./ops deploy development [<file>]" >&2
     exit 2
   fi
 
@@ -196,6 +215,11 @@ run_deploy() {
   require_command docker
   require_command ssh
   require_command scp
+  if [[ -z "$manifest_file" ]]; then
+    manifest_file="$(resolve_manifest "$(git -C "$project_root" rev-parse HEAD)")"
+    echo "Using manifest from the successful publish run:"
+    echo "  $manifest_file"
+  fi
   run_preflight "$environment" "$manifest_file"
 
   manifest_sha="$(sed -n 's/^RELEASE_SHA=//p' "$manifest_file")"
