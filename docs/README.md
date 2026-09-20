@@ -22,6 +22,7 @@
 - [2026-09-20 Deploy manifest default](plans/active/2026-09-20-deploy-manifest-default-development.md)
 - [2026-09-20 Site home foundation](plans/active/2026-09-20-site-home-foundation-development.md)
 - [2026-09-20 Privacy policy](plans/active/2026-09-20-privacy-policy-development.md)
+- [2026-09-20 Privacy Drive disclosure](plans/active/2026-09-20-privacy-drive-disclosure-development.md)
 - [2026-09-19 Web platform foundation](plans/active/2026-09-19-web-platform-foundation-development.md)
 - [2026-09-19 Architecture and stack evaluation](plans/active/2026-09-19-architecture-stack-evaluation.md)
 - [2026-09-19 Domain and host topology](plans/active/2026-09-19-domain-and-host-topology-development.md)
