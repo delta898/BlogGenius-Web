@@ -132,6 +132,16 @@ body {
   padding-top: 0;
 }
 
+.footer-legal-links {
+  margin-left: 16px;
+  display: inline-flex;
+  gap: 12px;
+}
+
+.footer-legal-links a {
+  color: #3c4a40;
+}
+
 .footer-note {
   margin: 0;
   color: #536057;
@@ -380,4 +390,60 @@ h1 {
   border-radius: 28px;
   background: rgb(255 255 255 / 72%);
   box-shadow: 0 28px 80px rgb(44 54 48 / 12%);
+}
+
+.policy {
+  width: min(880px, 100%);
+  margin-inline: auto;
+  padding: clamp(32px, 6vw, 64px);
+  border: 1px solid rgb(23 33 27 / 12%);
+  border-radius: 28px;
+  background: rgb(255 255 255 / 78%);
+  box-shadow: 0 28px 80px rgb(44 54 48 / 12%);
+  display: grid;
+  gap: 36px;
+}
+
+.policy h2 {
+  margin: 0 0 12px;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+}
+
+.policy p {
+  margin: 0 0 12px;
+  color: #3c4a40;
+  line-height: 1.8;
+}
+
+.policy p:last-child {
+  margin-bottom: 0;
+}
+
+.policy-list {
+  display: grid;
+  gap: 16px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.policy-list li {
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: #f4f1ea;
+}
+
+.policy-list h3 {
+  margin: 0 0 8px;
+  font-size: 1.02rem;
+}
+
+.policy-list p {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.policy-list p:last-child {
+  margin-bottom: 0;
 }

@@ -92,6 +92,10 @@ export default function SiteFooter() {
       <div className="site-footer-inner footer-support">
         <p className="footer-note">
           빠른 도움은 <Link href="/support/">지원 안내</Link>를 이용하세요.
+          <span className="footer-legal-links">
+            <Link href="/privacy-policy/">개인정보처리방침</Link>
+            <Link href="/terms/">이용약관</Link>
+          </span>
         </p>
       </div>
     </footer>
