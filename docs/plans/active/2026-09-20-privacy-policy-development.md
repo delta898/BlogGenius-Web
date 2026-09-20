@@ -95,4 +95,6 @@ Google OAuth 브랜드 인증을 `bloggenius.kr`로 이전하려면 공개
 
 ## Result
 
-진행 중이다.
+`/privacy-policy/` 9절과 `/terms/` 10절, 푸터 법적 링크 2개를 실전 배포/dev·prod
+검증까지 완료. Drive·선택 연동 고지는 후속 `privacy-drive-disclosure` 기록으로
+이어졌다. Search Console·승인된 도메인·브랜드 재신청은 사용자 측 완료.
