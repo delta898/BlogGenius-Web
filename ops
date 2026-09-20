@@ -25,9 +25,13 @@ Deployment foundation commands:
              Verify the immutable release manifest contract.
   preflight development <file> [--check-only]
              Verify a Development manifest and render Oracle Compose safely.
+  deploy development <file>
+             Deploy a verified Development manifest to the Oracle server.
+  rollback development
+             Roll back to the previous Development release on the Oracle server.
 
-Actual Development and Production deployment commands remain unavailable until
-the Oracle edge contract and rollback workflow are activated.
+Production deployment commands remain unavailable until the Production
+promotion process is defined and approved.
 EOF
 }
 
@@ -173,7 +177,76 @@ run_preflight() {
     exit 1
   fi
 
-  echo "Development release is eligible for the future deploy command."
+  echo "Development release is eligible for ./ops deploy development."
+}
+
+run_deploy() {
+  local environment="${1:-}" manifest_file="${2:-}"
+  local manifest_sha remote_dir
+  local deploy_host="${DEPLOY_HOST:-oracle1}"
+  local deploy_root="${DEPLOY_ROOT:-/home/ubuntu/Project/BlogGenius-Web}"
+
+  if [[ "$environment" != "development" || -z "$manifest_file" ]]; then
+    echo "Usage: ./ops deploy development <file>" >&2
+    exit 2
+  fi
+
+  require_command git
+  require_command node
+  require_command docker
+  require_command ssh
+  require_command scp
+  run_preflight "$environment" "$manifest_file"
+
+  manifest_sha="$(sed -n 's/^RELEASE_SHA=//p' "$manifest_file")"
+  remote_dir="$deploy_root/releases/$manifest_sha"
+
+  ssh "$deploy_host" "mkdir -p '$remote_dir'"
+  scp "$oracle_compose_file" "$deploy_host:$remote_dir/compose.oracle.yml"
+  scp "$manifest_file" "$deploy_host:$remote_dir/release.env"
+  ssh "$deploy_host" "\
+    cd '$remote_dir' && \
+    docker compose --env-file release.env -f compose.oracle.yml config --quiet && \
+    docker compose --env-file release.env -f compose.oracle.yml pull && \
+    docker compose --env-file release.env -f compose.oracle.yml up --detach --wait --wait-timeout 180"
+  ssh "$deploy_host" "\
+    cd '$deploy_root' && \
+    if [ -L current ]; then \
+      ln -sfn \"\$(readlink current)\" previous; \
+    fi && \
+    ln -sfn 'releases/$manifest_sha' current"
+
+  echo "Deployed development release $manifest_sha."
+  echo "Next: verify with ./ops preflight output above and the OracleWebInfra cutover check."
+}
+
+run_rollback() {
+  local environment="${1:-}"
+  local deploy_host="${DEPLOY_HOST:-oracle1}"
+  local deploy_root="${DEPLOY_ROOT:-/home/ubuntu/Project/BlogGenius-Web}"
+
+  if [[ "$environment" != "development" ]]; then
+    echo "Usage: ./ops rollback development" >&2
+    exit 2
+  fi
+
+  require_command ssh
+  ssh "$deploy_host" "\
+    cd '$deploy_root' && \
+    if [ ! -L previous ]; then \
+      echo 'No previous Development release is available.' >&2; \
+      exit 1; \
+    fi && \
+    previous_target=\"\$(readlink previous)\" && \
+    current_target=\"\$(readlink current)\" && \
+    cd \"\$previous_target\" && \
+    docker compose --env-file release.env -f compose.oracle.yml up --detach --wait --wait-timeout 180 && \
+    cd '$deploy_root' && \
+    ln -sfn \"\$current_target\" previous && \
+    ln -sfn \"\$previous_target\" current && \
+    echo \"Rolled back to \$previous_target.\""
+
+  echo "Development rollback finished. Verify application health and routes."
 }
 
 command_name="${1:-help}"
@@ -206,6 +279,14 @@ case "$command_name" in
   preflight)
     shift
     run_preflight "$@"
+    ;;
+  deploy)
+    shift
+    run_deploy "$@"
+    ;;
+  rollback)
+    shift
+    run_rollback "$@"
     ;;
   *)
     echo "Unknown command: $command_name" >&2
