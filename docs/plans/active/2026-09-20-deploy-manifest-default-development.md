@@ -73,8 +73,13 @@
 
 ## Remaining Risks and Follow-up
 
-- 서버 실전 테스트 미실시
+- 서버 실전 테스트 완료 (2026-09-20, 승인済み): 인자 없는
+  `./ops deploy development`로 `8234836` 자동 해석·배포·Healthy 확인.
+  `current → releases/8234836`, `previous → releases/cf6f6ed` 자동 갱신,
+  cutover 통과, public `dev`·`admin.dev` 200.
+- Production 명령은 범위 밖.
 
 ## Result
 
-진행 중이다.
+인자 생략 시 현재 커밋의 성공 publish run manifest를 사용하는 기본값 구현·검증·실전
+배포 완료. 명시 경로 지정도 그대로 지원한다.
