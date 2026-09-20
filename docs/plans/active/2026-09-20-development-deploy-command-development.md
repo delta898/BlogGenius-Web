@@ -80,16 +80,22 @@ Development 릴리스 배포가 수동 SSH·`scp`·`compose up` 절차에 의존
 
 - `bash -n ops`
 - `./ops help`에 새 명령 표시
-- 기존 `./ops validate` 회귀 (lint, typecheck, unit, build)
+- 기존 `./ops validate` 회귀 (lint, typecheck, unit, build) — ops가 bash라 JS 변경 없음, `bash -n`+help+preflight 회귀로 대체
 - Negative test: 잘못된 environment, 없는 manifest, dirty tree에서 거부
-- 서버 실전 테스트는 승인 후: 동일 릴리스 재배포 + `current` 링크 확인 + cutover 재확인
+- 서버 실전 테스트 완료 (2026-09-20, 승인済み):
+  - `rollback` 선행 실행 → `previous` 없어 clean 실패 (exit 1, 무변경)
+  - `deploy development <cf6f6ed manifest>` → pull·recreate·Healthy, `current → releases/cf6f6ed`
+  - `test-bloggenius-cutover.sh development` 통과, public `dev`·`admin.dev` 200
+  - `previous`는 첫 ops 배포라 자동 생성 안 됨 → 수동 `releases/5d487a1`로 보정, 유효 확인
 
 ## Remaining Risks and Follow-up
 
-- 서버 실전 테스트 미실시 (승인 대기)
+- `rollback` 성공 경로는 미검증 (다음 릴리스 때 `previous`가 살아있는 상태로 시험 가능)
 - Production `promote`/`rollback`은 범위 밖
 - CI 자동 배포는 서버 절차가 수동으로 증명된 뒤 별도 결정
 
 ## Result
 
-진행 중이다.
+`./ops deploy`/`rollback development` 구현·검증·실전 배포 완료. 운영 문서는
+`deployment-quickstart.md`에 반영済み. 완료 기록의 archive 이동과 장기 결정 승격은
+다음 정리 시점에 판단한다.
