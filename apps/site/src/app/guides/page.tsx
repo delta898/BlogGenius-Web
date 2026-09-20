@@ -4,6 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "가이드 | BlogGenius",
   description: "BlogGenius 활용 가이드 페이지입니다.",
+  alternates: { canonical: "/guides/" },
 };
 
 export default function GuidesPage() {

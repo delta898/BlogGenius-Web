@@ -4,6 +4,7 @@ import { supportChatUrl } from "../../content/navigation";
 export const metadata: Metadata = {
   title: "지원 | BlogGenius",
   description: "BlogGenius 지원 진입점입니다.",
+  alternates: { canonical: "/support/" },
 };
 
 export default function SupportPage() {

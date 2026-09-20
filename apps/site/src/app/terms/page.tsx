@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "이용약관 | BlogGenius",
   description:
     "BlogGenius 데스크톱 앱 이용에 관한 권리와 의무, 라이선스와 이용 한도를 안내합니다.",
+  alternates: { canonical: "/terms/" },
 };
 
 const sections = [

@@ -5,6 +5,7 @@ import Reveal from "../components/Reveal";
 export const metadata: Metadata = {
   title: "BlogGenius | 주제만 정하세요",
   description: "어려운 컴퓨터 지식 없이 블로그를 운영하는 데스크톱 도우미, BlogGenius를 소개합니다.",
+  alternates: { canonical: "/" },
 };
 
 const highlights = [
@@ -40,6 +41,18 @@ const steps = [
 export default function HomePage() {
   return (
     <main className="page-shell">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            name: "BlogGenius",
+            url: "https://www.bloggenius.kr/",
+            inLanguage: "ko",
+          }),
+        }}
+      />
       <section className="hero" aria-labelledby="hero-title">
         <Reveal>
           <p className="eyebrow">BLOGGENIUS</p>

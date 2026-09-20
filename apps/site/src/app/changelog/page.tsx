@@ -4,6 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "변경내역 | BlogGenius",
   description: "BlogGenius 변경내역 페이지입니다.",
+  alternates: { canonical: "/changelog/" },
 };
 
 export default function ChangelogPage() {

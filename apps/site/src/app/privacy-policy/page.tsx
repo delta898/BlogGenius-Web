@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "개인정보처리방침 | BlogGenius",
   description:
     "BlogGenius 데스크톱 앱과 공개 사이트가 어떤 정보를 수집·이용·보관하고 어떻게 파기하는지 안내합니다.",
+  alternates: { canonical: "/privacy-policy/" },
 };
 
 const collectedItems = [

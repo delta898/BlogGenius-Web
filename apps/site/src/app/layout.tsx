@@ -5,8 +5,20 @@ import SiteHeader from "../components/SiteHeader";
 import "./styles.css";
 
 export const metadata: Metadata = {
-  title: "BlogGenius",
+  metadataBase: new URL("https://www.bloggenius.kr"),
+  title: {
+    default: "BlogGenius | 주제만 정하세요",
+    template: "%s",
+  },
   description: "주제만 정하세요. 글쓰기부터 발행까지 BlogGenius가 도와드립니다.",
+  openGraph: {
+    siteName: "BlogGenius",
+    locale: "ko_KR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

@@ -5,6 +5,7 @@ import Reveal from "../../components/Reveal";
 export const metadata: Metadata = {
   title: "기능 | BlogGenius",
   description: "AI 글쓰기부터 자동발행까지, BlogGenius의 기능을 소개합니다.",
+  alternates: { canonical: "/features/" },
 };
 
 const groups = [

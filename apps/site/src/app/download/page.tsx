@@ -4,6 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "다운로드 | BlogGenius",
   description: "BlogGenius 설치 파일 안내 페이지입니다.",
+  alternates: { canonical: "/download/" },
 };
 
 export default function DownloadPage() {
