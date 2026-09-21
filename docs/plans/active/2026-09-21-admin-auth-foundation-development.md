@@ -138,16 +138,13 @@ capability 검사·audit 기록이 동작해야 다음 층(license 조회)을 �
   OTP 검증 → 홈. audit 출력 확인.
 - [ ] prod Auth 설정 + prod 초대 (dev 실동작 통과 후 — 다음 작업)
 
-## Blocker: dev 초대 메일 발송 (2026-09-21, 중단 시점 기록)
+## Blocker: dev 초대 메일 발송 (2026-09-21, 해결됨)
 
 - 증상: CLI 초대 → `supabase invite failed: Error sending invite email`.
   auth_logs: `/invite` 500 + `535 "5.7.8 Authentication failed"` (Supabase→Brevo SMTP 로그인 거부).
-- 확인된 사실: Brevo 설정값(host·port·login·키 형식) 정상 기재. Brevo 직접 curl도 67(login denied).
-  Brevo Senders 검증済み: `BlogGenius <delta898@gmail.com>`.
-  Desktop 발신자는 `LICENSE_EMAIL_FROM` secret (수신 메일 기준 `delta898@10653932.brevosend.com`).
-- 가설 (미확인): Brevo SMTP 키 무효/계정 레벨 SMTP 제한/붙여넣기 잘림.
-- 다음 수: ① 내장 SMTP로 복귀 후 재초대 (사용자 팀원 주소라 발송 가능, 시간당 2통),
-  ② Brevo는 키 길이 확인 + 신규 키 + 지원 문의로 병렬 해결 (prod에 필요).
+- 원인: Brevo 측 unauthorized IP 제한. 해소 후 발송 정상 (초대 메일 도착 확인).
+  직접 curl의 67(login denied)은 동일 원인의 다른 얼굴이었으며 본류 아님.
+- prod 주의: Brevo IP 제한이 prod SMTP에도 걸릴 수 있음. prod 설정 시 확인.
 - 관련 산출물: `scripts/assign-admin-role.mjs` (메일 없이 역할 부여, 향후 역할 변경에도 사용).
 - 2026-09-21: 세션 유실 미스터리 해결. 증상: `/auth/confirm` verify 성공(audit
   success) 직후 `/auth/setup-password`가 항상 `/login`으로. 원인: dev 서버의
