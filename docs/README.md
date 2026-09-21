@@ -17,6 +17,7 @@
 
 ## Current Documents
 
+- [2026-09-21 Admin auth foundation](plans/active/2026-09-21-admin-auth-foundation-development.md)
 - [2026-09-21 Admin foundation contract](plans/archive/2026-09-21-admin-foundation-contract-development.md)
 - [2026-09-20 Development deployment foundation](plans/archive/2026-09-20-development-deployment-foundation-development.md)
 - [2026-09-20 Development deploy command](plans/active/2026-09-20-development-deploy-command-development.md)

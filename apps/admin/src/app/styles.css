@@ -71,3 +71,114 @@ p:last-child {
   font-size: 1.05rem;
   line-height: 1.75;
 }
+
+.auth-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 28px;
+  max-width: 420px;
+}
+
+.auth-form label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #cfe3d4;
+}
+
+.auth-form input {
+  padding: 12px 14px;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 12px;
+  background: #101713;
+  color: #f2f7f3;
+  font-size: 1rem;
+}
+
+.auth-form input:focus-visible,
+button:focus-visible {
+  outline: 2px solid #4dc67c;
+  outline-offset: 2px;
+}
+
+button {
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 12px;
+  background: #2f9e5f;
+  color: #06110a;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.auth-error {
+  margin: 0;
+  color: #ff9d9d;
+  font-size: 0.92rem;
+}
+
+.session-box {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  margin: 28px 0 0;
+  padding: 0;
+}
+
+.session-box dt {
+  color: #85eda9;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.session-box dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.factor-list {
+  list-style: none;
+  margin: 28px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.factor-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 12px;
+}
+
+.enrollment-box {
+  margin-top: 28px;
+  display: grid;
+  gap: 16px;
+}
+
+.enrollment-box dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.enrollment-box code {
+  overflow-wrap: anywhere;
+  color: #85eda9;
+}
+
+.qr-code {
+  max-width: 220px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fff;
+}

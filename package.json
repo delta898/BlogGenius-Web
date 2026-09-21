@@ -11,7 +11,7 @@
     "build": "pnpm --recursive --if-present run build",
     "dev": "pnpm --parallel --filter './apps/*' run dev",
     "lint": "eslint apps scripts --max-warnings 0",
-    "test": "vitest run",
+    "test": "APP_ENVIRONMENT=local vitest run",
     "typecheck": "pnpm --recursive --if-present run typecheck"
   },
   "devDependencies": {

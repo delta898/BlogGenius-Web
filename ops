@@ -19,6 +19,8 @@ Local foundation commands:
   up         Build and start the local Compose project, then wait for health.
   down       Stop the local Compose project without deleting volumes.
   status     Show Git identity and local container status.
+  admin-dev  Run Backoffice dev server against Development Supabase
+             (reads apps/admin/.env.local; never use for Production).
 
 Deployment foundation commands:
   manifest verify <file> <environment>
@@ -273,6 +275,24 @@ run_rollback() {
   echo "Development rollback finished. Verify application health and routes."
 }
 
+run_admin_dev() {
+  local env_file="$project_root/apps/admin/.env.local"
+
+  require_command pnpm
+  if [[ ! -f "$env_file" ]]; then
+    echo "Missing $env_file with Development Supabase values." >&2
+    echo "Create it (git-ignored) with APP_ENVIRONMENT=development," >&2
+    echo "NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY." >&2
+    exit 1
+  fi
+  if grep -q "PRODUCTION\|production" "$env_file"; then
+    echo "Refusing: $env_file looks like Production config." >&2
+    exit 1
+  fi
+  cd "$project_root"
+  pnpm --filter @bloggenius/admin run dev:development
+}
+
 command_name="${1:-help}"
 case "$command_name" in
   help|-h|--help)
@@ -295,6 +315,9 @@ case "$command_name" in
     ;;
   status)
     run_status
+    ;;
+  admin-dev)
+    run_admin_dev
     ;;
   manifest)
     shift
