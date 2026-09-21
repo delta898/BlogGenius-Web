@@ -17,6 +17,7 @@
 
 ## Current Documents
 
+- [2026-09-21 Admin foundation contract](plans/archive/2026-09-21-admin-foundation-contract-development.md)
 - [2026-09-20 Development deployment foundation](plans/archive/2026-09-20-development-deployment-foundation-development.md)
 - [2026-09-20 Development deploy command](plans/active/2026-09-20-development-deploy-command-development.md)
 - [2026-09-20 Deploy manifest default](plans/active/2026-09-20-deploy-manifest-default-development.md)
@@ -29,7 +30,9 @@
 - [2026-09-19 Domain and host topology](plans/active/2026-09-19-domain-and-host-topology-development.md)
 - [2026-09-20 Web workspace foundation](plans/archive/2026-09-20-web-workspace-foundation-development.md)
 - [Workspace and runtime layout](architecture/workspace-and-runtime-layout.md)
+- [Backoffice trust boundary](architecture/backoffice-trust-boundary.md)
 - [2026-09-19 Git branch and promotion strategy](decisions/2026-09-19-git-branch-and-promotion-strategy.md)
+- [2026-09-21 Admin foundation contract](decisions/2026-09-21-admin-foundation-contract.md)
 - [2026-09-19 Canonical domain and primary hosts](decisions/2026-09-19-canonical-domain-and-primary-hosts.md)
 - [2026-09-20 Containerized Web deployment](decisions/2026-09-20-containerized-web-deployment.md)
 - [2026-09-20 Immutable release manifest](decisions/2026-09-20-immutable-release-manifest.md)

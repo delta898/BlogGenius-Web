@@ -15,3 +15,4 @@
 ## Current Documents
 
 - [Workspace and runtime layout](workspace-and-runtime-layout.md)
+- [Backoffice trust boundary](backoffice-trust-boundary.md)

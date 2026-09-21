@@ -15,4 +15,5 @@
 
 ## Current Decisions
 
+- [Admin foundation contract](2026-09-21-admin-foundation-contract.md)
 - [Immutable release manifest](2026-09-20-immutable-release-manifest.md)
