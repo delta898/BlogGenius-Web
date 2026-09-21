@@ -6,19 +6,23 @@ export interface SupabasePublicConfig {
 }
 
 /**
- * Backoffice가 브라우저에 노출해도 되는 publishable 설정만 검증한다.
+ * Backoffice가 Supabase와 말하기 위한 공개 설정.
+ * 빌드 시점이 아니라 실행 시점에 읽는다 (runtime env). 같은 이미지가
+ * Development·Production에서 각 환경 값을 주입받아 동작하므로
+ * artifact 승격이 깨지지 않는다. 브라우저 bundle에는 들어가지 않는다
+ * (Server Action·Route Handler·middleware에서만 사용).
  * service_role 등 server-only credential은 이 모듈에서 절대 다루지 않는다.
  * 값이 없거나 형태가 틀리면 fail-closed (예외 발생).
  */
 export function getSupabasePublicConfig(
   env: NodeJS.ProcessEnv = process.env,
 ): SupabasePublicConfig {
-  const url = (env.NEXT_PUBLIC_SUPABASE_URL ?? "").trim();
-  const anonKey = (env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
+  const url = (env.SUPABASE_URL ?? "").trim();
+  const anonKey = (env.SUPABASE_ANON_KEY ?? "").trim();
 
   if (url === "" || anonKey === "") {
     throw new Error(
-      "ENV_MISCONFIGURED: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set.",
+      "ENV_MISCONFIGURED: SUPABASE_URL and SUPABASE_ANON_KEY must be set.",
     );
   }
 
@@ -26,14 +30,14 @@ export function getSupabasePublicConfig(
   try {
     parsed = new URL(url);
   } catch {
-    throw new Error("ENV_MISCONFIGURED: NEXT_PUBLIC_SUPABASE_URL is not a valid URL.");
+    throw new Error("ENV_MISCONFIGURED: SUPABASE_URL is not a valid URL.");
   }
 
   const isLocalhost =
     parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
   if (parsed.protocol !== "https:" && !isLocalhost) {
     throw new Error(
-      "ENV_MISCONFIGURED: NEXT_PUBLIC_SUPABASE_URL must use https outside localhost.",
+      "ENV_MISCONFIGURED: SUPABASE_URL must use https outside localhost.",
     );
   }
 

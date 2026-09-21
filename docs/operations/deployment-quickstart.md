@@ -75,6 +75,43 @@ Compose render)을 먼저 강제하고, 서버 `releases/<sha>/`에 Compose와 m
 릴리스를 `previous`에 남긴다. `rollback`은 `previous`가 있을 때만 직전 릴리스로
 복귀한다. 두 명령 모두 Caddy, OracleWebInfra, Production에触하지 않는다.
 
+### Host environment file (Backoffice runtime config)
+
+Backoffice 이미지는 환경 값을 빌드하지 않는다. 같은 digest가 Development와
+Production에서 각 환경 값을 주입받아 동작한다 (artifact 승격 보존).
+운영 머신의 `deployment/env/<environment>.env`가 단일 진실의 원천이며,
+`deploy` 때마다 호스트로 동기화되므로 손으로 SSH 관리하지 않는다.
+repo에 커밋되지 않는다 (`.gitignore`).
+
+```bash
+cp deployment/env/development.env.example deployment/env/development.env
+# SUPABASE_URL, SUPABASE_ANON_KEY를 Development Supabase 값으로 채운다
+chmod 600 deployment/env/development.env
+```
+
+- `deploy`는 이 파일을 검증(필수 키 존재·manifest 키 혼입 금지)한 뒤
+  호스트 `$DEPLOY_ROOT/env/<environment>.env`로 매번 업로드한다.
+  `rollback`은 호스트의 기존 파일을 그대로 쓴다.
+- 이 파일에는 `SUPABASE_URL`·`SUPABASE_ANON_KEY`만 둔다.
+  manifest 키(`RELEASE_*`, `*_IMAGE`, `DEPLOY_ENVIRONMENT`) 혼입은 거부된다.
+- Production 파일(`production.env`)은 Production 승격이 승인될 때 별도로 만든다.
+  Development 값을 복사하지 않는다.
+
+### Local Backoffice config
+
+로컬 Backoffice(`./ops admin-dev`)도 같은 파일에서 읽는다.
+`apps/admin/.env.local`의 구 변수명(`NEXT_PUBLIC_*`)은 더 이상 쓰지 않으므로
+지우거나 무시한다.
+
+`ops up` 컨테이너 전체 검증 시에는 실행 전에 주입한다:
+
+```bash
+set -a; source deployment/env/development.env; set +a
+./ops up
+```
+
+(`APP_ENVIRONMENT`는 Compose의 `local`이 우선한다.)
+
 배포 후 OracleWebInfra의 환경별 cutover 검사를 수행한다.
 
 ```bash

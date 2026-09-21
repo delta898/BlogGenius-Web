@@ -168,6 +168,22 @@ capability 검사·audit 기록이 동작해야 다음 층(license 조회)을 �
   service_role·SMTP 키를 채팅·문서·repo에 기록하지 말 것.
 - OTP secret은 관리자 본인의 OTP 앱에만 둔다 (스크린샷·문서·채팅에 노출 금지).
   분실 대비 복구 절차(소유자 재초대)는 prod 전에 운영 문서로 남긴다.
+- 2026-09-21: dev 배포 실패 (`{"code":"ENV_MISCONFIGURED"}`).
+  원인: `NEXT_PUBLIC_*`는 빌드 시점에 박히는데 CI 빌드에는 값이 없어서
+  컨테이너가 fail-closed. 수정: 서버 전용 runtime env
+  (`SUPABASE_URL`·`SUPABASE_ANON_KEY`)로 전환. 브라우저는 anon key를 쓰지
+  않으므로(Server Action만 사용) 같은 이미지가 dev·prod 값 주입으로 동작해
+  artifact 승격이 유지된다. 변경: `supabaseEnv`·middleware·confirm route·
+  테스트, 기동 검사(`validate-runtime-env.mjs`), `compose.oracle.yml`에 env
+  추가,   `ops deploy/rollback`에 호스트 env 파일(`$DEPLOY_ROOT/env/*.env`,
+  repo 외부) 연결, preflight는 dummy 값으로 render만 확인, 운영 문서에
+  호스트 파일·로컬 `.env.local` 규격 기록. 교훈: `NEXT_PUBLIC_*`은
+  환경별 값이 필요한 설정에 쓰지 않는다.
+- 2026-09-21: 호스트 env 파일 수동 관리案 철회. 로컬
+  `deployment/env/<environment>.env`를 단일 진실 원천으로 하고 `deploy`가
+  매번 호스트로 업로드(드리프트 원천 차단). `preflight --check-only`는
+  파일 없이도 통과(CI 안전). `admin-dev`도 같은 파일에서 읽는다.
+  `apps/admin/.env.local`의 구 변수명은 무시된다 (삭제 권장).
 - [x] 허용·미인증·권한부족 테스트: 미인증 `/`→로그인, `aal1`→MFA 강제,
   역할 없는 계정 capability 없음(deny-by-default 단위 테스트) 확인.
   변조 입력(잘못된 비밀번호·OTP·토큰 재사용)은 실동작 중 확인.

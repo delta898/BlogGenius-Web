@@ -3,15 +3,15 @@ import { getSupabasePublicConfig } from "./supabaseEnv";
 
 const validEnv = {
   APP_ENVIRONMENT: "local",
-  NEXT_PUBLIC_SUPABASE_URL: "https://xyzcompany.supabase.co",
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon-key",
+  SUPABASE_URL: "https://xyzcompany.supabase.co",
+  SUPABASE_ANON_KEY: "anon-key",
 } as unknown as NodeJS.ProcessEnv;
 
 describe("getSupabasePublicConfig", () => {
   it("accepts https config and strips trailing slash", () => {
     const config = getSupabasePublicConfig({
       ...validEnv,
-      NEXT_PUBLIC_SUPABASE_URL: "https://xyzcompany.supabase.co/",
+      SUPABASE_URL: "https://xyzcompany.supabase.co/",
     });
     expect(config.url).toBe("https://xyzcompany.supabase.co");
     expect(config.anonKey).toBe("anon-key");
@@ -19,10 +19,10 @@ describe("getSupabasePublicConfig", () => {
 
   it("rejects missing values (fail-closed)", () => {
     expect(() =>
-      getSupabasePublicConfig({ ...validEnv, NEXT_PUBLIC_SUPABASE_URL: "" }),
+      getSupabasePublicConfig({ ...validEnv, SUPABASE_URL: "" }),
     ).toThrow("ENV_MISCONFIGURED");
     expect(() =>
-      getSupabasePublicConfig({ ...validEnv, NEXT_PUBLIC_SUPABASE_ANON_KEY: "  " }),
+      getSupabasePublicConfig({ ...validEnv, SUPABASE_ANON_KEY: "  " }),
     ).toThrow("ENV_MISCONFIGURED");
   });
 
@@ -30,13 +30,13 @@ describe("getSupabasePublicConfig", () => {
     expect(() =>
       getSupabasePublicConfig({
         ...validEnv,
-        NEXT_PUBLIC_SUPABASE_URL: "http://example.com",
+        SUPABASE_URL: "http://example.com",
       }),
     ).toThrow("ENV_MISCONFIGURED");
     expect(() =>
       getSupabasePublicConfig({
         ...validEnv,
-        NEXT_PUBLIC_SUPABASE_URL: "not-a-url",
+        SUPABASE_URL: "not-a-url",
       }),
     ).toThrow("ENV_MISCONFIGURED");
   });

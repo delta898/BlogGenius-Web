@@ -8,6 +8,10 @@ coverage/
 .env
 .env.*
 !.env.example
+# Per-environment runtime values (single source on the operator machine,
+# synced to the host by ./ops deploy; never committed except *.example)
+deployment/env/*.env
+!deployment/env/*.example
 
 # Tooling
 *.tsbuildinfo

@@ -158,7 +158,10 @@ run_preflight() {
   require_command node
   require_command docker
   node "$manifest_tool" verify "$manifest_file" "$environment"
-  docker compose --env-file "$manifest_file" --file "$oracle_compose_file" config --quiet
+  # Compose render check only: Supabase values are dummies here.
+  # Real values come from the host env file at deploy time.
+  SUPABASE_URL="https://preflight.invalid" SUPABASE_ANON_KEY="preflight" \
+    docker compose --env-file "$manifest_file" --file "$oracle_compose_file" config --quiet
 
   branch="$(git -C "$project_root" branch --show-current)"
   head="$(git -C "$project_root" rev-parse HEAD)"
@@ -226,15 +229,28 @@ run_deploy() {
 
   manifest_sha="$(sed -n 's/^RELEASE_SHA=//p' "$manifest_file")"
   remote_dir="$deploy_root/releases/$manifest_sha"
+  # Host env file holds per-environment runtime values (SUPABASE_URL,
+  # SUPABASE_ANON_KEY). The local deployment/env/<environment>.env is the
+  # single source; it is uploaded on every deploy so the host never drifts.
+  # It must not redefine manifest keys. Never committed (see .gitignore).
+  local_env_file="$project_root/deployment/env/$environment.env"
+  remote_env_file="$deploy_root/env/$environment.env"
+  if [[ ! -f "$local_env_file" ]]; then
+    echo "Missing $local_env_file." >&2
+    echo "Copy deployment/env/development.env.example and fill the values." >&2
+    exit 1
+  fi
+  check_env_file_keys "$local_env_file"
 
-  ssh "$deploy_host" "mkdir -p '$remote_dir'"
+  ssh "$deploy_host" "mkdir -p '$remote_dir' '$deploy_root/env'"
   scp "$oracle_compose_file" "$deploy_host:$remote_dir/compose.oracle.yml"
   scp "$manifest_file" "$deploy_host:$remote_dir/release.env"
+  scp "$local_env_file" "$deploy_host:$remote_env_file"
   ssh "$deploy_host" "\
     cd '$remote_dir' && \
-    docker compose --env-file release.env -f compose.oracle.yml config --quiet && \
-    docker compose --env-file release.env -f compose.oracle.yml pull && \
-    docker compose --env-file release.env -f compose.oracle.yml up --detach --wait --wait-timeout 180"
+    docker compose --env-file release.env --env-file '$remote_env_file' -f compose.oracle.yml config --quiet && \
+    docker compose --env-file release.env --env-file '$remote_env_file' -f compose.oracle.yml pull && \
+    docker compose --env-file release.env --env-file '$remote_env_file' -f compose.oracle.yml up --detach --wait --wait-timeout 180"
   ssh "$deploy_host" "\
     cd '$deploy_root' && \
     if [ -L current ]; then \
@@ -266,7 +282,7 @@ run_rollback() {
     previous_target=\"\$(readlink previous)\" && \
     current_target=\"\$(readlink current)\" && \
     cd \"\$previous_target\" && \
-    docker compose --env-file release.env -f compose.oracle.yml up --detach --wait --wait-timeout 180 && \
+    docker compose --env-file release.env --env-file '$deploy_root/env/$environment.env' -f compose.oracle.yml up --detach --wait --wait-timeout 180 && \
     cd '$deploy_root' && \
     ln -sfn \"\$current_target\" previous && \
     ln -sfn \"\$previous_target\" current && \
@@ -276,21 +292,45 @@ run_rollback() {
 }
 
 run_admin_dev() {
-  local env_file="$project_root/apps/admin/.env.local"
+  local env_file="$project_root/deployment/env/development.env"
 
   require_command pnpm
   if [[ ! -f "$env_file" ]]; then
-    echo "Missing $env_file with Development Supabase values." >&2
-    echo "Create it (git-ignored) with APP_ENVIRONMENT=development," >&2
-    echo "NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY." >&2
+    echo "Missing $env_file." >&2
+    echo "Copy deployment/env/development.env.example and fill SUPABASE_URL / SUPABASE_ANON_KEY." >&2
     exit 1
   fi
   if grep -q "PRODUCTION\|production" "$env_file"; then
     echo "Refusing: $env_file looks like Production config." >&2
     exit 1
   fi
+  check_env_file_keys "$env_file"
   cd "$project_root"
-  pnpm --filter @bloggenius/admin run dev:development
+  set -a
+  # shellcheck disable=SC1090
+  source "$env_file"
+  set +a
+  APP_ENVIRONMENT=development pnpm --filter @bloggenius/admin run dev:development
+}
+
+# Shared guard: env file must carry exactly the runtime keys, nothing else.
+check_env_file_keys() {
+  local env_file="$1" key
+  local missing=""
+
+  for key in SUPABASE_URL SUPABASE_ANON_KEY; do
+    if ! grep -q "^${key}=[^[:space:]]" "$env_file"; then
+      missing="$missing $key"
+    fi
+  done
+  if [[ -n "$missing" ]]; then
+    echo "Missing keys in $env_file: $missing" >&2
+    exit 1
+  fi
+  if grep -q -E "^(RELEASE_|DEPLOY_ENVIRONMENT|SITE_IMAGE|ADMIN_IMAGE)" "$env_file"; then
+    echo "Refusing: $env_file must not redefine manifest keys." >&2
+    exit 1
+  fi
 }
 
 command_name="${1:-help}"

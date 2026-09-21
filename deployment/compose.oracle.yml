@@ -25,6 +25,8 @@ services:
     restart: unless-stopped
     environment:
       APP_ENVIRONMENT: ${DEPLOY_ENVIRONMENT}
+      SUPABASE_URL: ${SUPABASE_URL:?SUPABASE_URL is required}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:?SUPABASE_ANON_KEY is required}
     labels:
       bloggenius.environment: ${DEPLOY_ENVIRONMENT}
       bloggenius.release-sha: ${RELEASE_SHA:?RELEASE_SHA is required}
